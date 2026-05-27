@@ -2,10 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary -->
     <title>Zenith — Minimal Productivity</title>
-    <meta name="description" content="A beautifully minimal productivity app — tasks, Pomodoro timer, and notes in one clean interface." />
+    <meta name="description" content="Tasks, Pomodoro timer, and notes in one beautifully minimal app." />
+    <meta name="application-name" content="Zenith" />
+
+    <!-- Theme -->
+    <meta name="theme-color" content="#4f7af8" />
+    <meta name="msapplication-TileColor" content="#4f7af8" />
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Zenith" />
+
+    <!-- iOS icons (Safari uses these for "Add to Home Screen") -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
+
+    <!-- iOS Splash Screens (optional — covers common iPhone sizes) -->
+    <!-- iPhone 15 Pro Max -->
+    <link rel="apple-touch-startup-image"
+          media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)"
+          href="/icons/icon-512x512.png" />
+    <!-- iPhone 15 / 14 Pro -->
+    <link rel="apple-touch-startup-image"
+          media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)"
+          href="/icons/icon-512x512.png" />
+    <!-- iPhone SE -->
+    <link rel="apple-touch-startup-image"
+          media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)"
+          href="/icons/icon-512x512.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
   </head>
   <body>
     <div id="root"></div>
