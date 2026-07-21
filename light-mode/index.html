@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="Light Mode" />
+<meta name="theme-color" content="#f5f5f3" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+<title>Light Mode</title>
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <p class="wordmark">LIGHT MODE</p>
+    <button id="session-toggle" class="session-toggle" type="button">Enter Light Mode</button>
+    <p id="session-timer" class="session-timer" hidden>In Light Mode &middot; <span id="elapsed">00:00:00</span></p>
+  </header>
+
+  <div id="nudge-banner" class="nudge-banner" hidden role="status">
+    <span id="nudge-text"></span>
+    <button id="nudge-dismiss" class="nudge-dismiss" type="button" aria-label="Dismiss">&times;</button>
+  </div>
+
+  <main class="tools-grid" aria-label="Tools">
+    <button class="tool-tile" data-tool="alarm" type="button">Alarm</button>
+    <button class="tool-tile" data-tool="calculator" type="button">Calculator</button>
+    <button class="tool-tile" data-tool="notes" type="button">Notes</button>
+    <button class="tool-tile" data-tool="tasks" type="button">Tasks</button>
+    <button class="tool-tile" data-tool="weather" type="button">Weather</button>
+    <button class="tool-tile" data-tool="directions" type="button">Directions</button>
+    <button class="tool-tile" data-tool="podcasts" type="button">Podcasts</button>
+    <button class="tool-tile" data-tool="music" type="button">Music</button>
+  </main>
+</div>
+
+<div id="tool-overlay" class="tool-overlay" hidden>
+  <div class="tool-panel" role="dialog" aria-modal="true">
+    <button id="tool-close" class="tool-close" type="button" aria-label="Close">&times;</button>
+    <div id="tool-content"></div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

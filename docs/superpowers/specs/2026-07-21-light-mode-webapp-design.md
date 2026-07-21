@@ -46,10 +46,13 @@ alongside (and independent of) the existing R programming assignment files.
   - `css/style.css` — grayscale visual system, layout.
   - `js/app.js` — Light Mode session state, timer, nudge banner logic,
     tool interactions, `localStorage` persistence.
-  - `js/sw.js` (registered from `index.html`) — service worker: caches the
-    app shell (HTML/CSS/JS/icons) on install, serves cache-first, falls
-    back to network for the weather API call (never cached, since it's
-    time-sensitive data).
+  - `sw.js` at the app root (registered from `js/app.js`) — service
+    worker: caches the app shell (HTML/CSS/JS/icons) on install, serves
+    cache-first, falls back to network for the weather API call (never
+    cached, since it's time-sensitive data). Must live at the app root,
+    not under `js/`, because a service worker's default control scope is
+    its own script's directory and below — placing it under `js/` would
+    stop it from ever controlling `index.html`.
   - `manifest.json` — PWA manifest: `display: standalone`, grayscale
     `theme_color`/`background_color`, icon set.
   - `icons/` — home-screen icon PNGs (multiple sizes) + `apple-touch-icon`.
