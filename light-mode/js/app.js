@@ -10,12 +10,18 @@
     if (storageBroken) {
       return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : fallback;
     }
+    var raw;
     try {
-      var raw = localStorage.getItem(key);
-      return raw === null ? fallback : JSON.parse(raw);
+      raw = localStorage.getItem(key);
     } catch (e) {
       storageBroken = true;
       return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : fallback;
+    }
+    if (raw === null) return fallback;
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      return fallback;
     }
   }
 
@@ -90,7 +96,10 @@
   function tickSession() {
     var start = storageGet("lm_session_start", null);
     if (!start) return;
-    var elapsed = Date.now() - start;
+    var rawElapsed = Date.now() - start;
+    // Never let the displayed timer move backward, even if the system clock does.
+    var elapsed = Math.max(rawElapsed, storageGet("lm_session_elapsed_hwm", 0));
+    storageSet("lm_session_elapsed_hwm", elapsed);
     elapsedEl.textContent = formatElapsed(elapsed);
 
     var step = Math.floor(elapsed / NUDGE_INTERVAL_MS);
@@ -130,6 +139,7 @@
   function enterLightMode() {
     storageSet("lm_session_start", Date.now());
     storageSet("lm_last_nudge_step", 0);
+    storageSet("lm_session_elapsed_hwm", 0);
     setSessionUI(true);
     startSessionTimer();
   }
@@ -137,6 +147,7 @@
   function exitLightMode() {
     storageRemove("lm_session_start");
     storageRemove("lm_last_nudge_step");
+    storageRemove("lm_session_elapsed_hwm");
     stopSessionTimer();
     hideNudge();
     setSessionUI(false);
@@ -166,10 +177,10 @@
   /* ---------- tool overlay ---------- */
 
   function openTool(name) {
-    var renderer = TOOLS[name];
-    if (!renderer) return;
+    var tool = TOOLS[name];
+    if (!tool || tool.type !== "panel") return;
     toolContent.innerHTML = "";
-    renderer(toolContent);
+    tool.render(toolContent);
     toolOverlay.hidden = false;
   }
 
@@ -186,12 +197,10 @@
   document.querySelectorAll(".tool-tile").forEach(function (tile) {
     tile.addEventListener("click", function () {
       var name = tile.getAttribute("data-tool");
-      if (name === "podcasts") {
-        window.open("https://podcasts.apple.com/", "_blank", "noopener");
-        return;
-      }
-      if (name === "music") {
-        window.open("https://music.apple.com/", "_blank", "noopener");
+      var tool = TOOLS[name];
+      if (!tool) return;
+      if (tool.type === "link") {
+        window.open(tool.url, "_blank", "noopener");
         return;
       }
       openTool(name);
@@ -237,6 +246,7 @@
     if (currentHHMM() === alarm.time) {
       alarm.enabled = false;
       storageSet("lm_alarm", alarm);
+      stopAlarmWatcher();
       playBeep();
       window.alert("Alarm: " + alarm.time);
       if (document.getElementById("alarm-status")) renderAlarmStatus();
@@ -247,7 +257,18 @@
     if (alarmCheckIntervalId) return;
     alarmCheckIntervalId = window.setInterval(checkAlarm, 1000);
   }
-  ensureAlarmWatcher();
+
+  function stopAlarmWatcher() {
+    if (alarmCheckIntervalId) {
+      window.clearInterval(alarmCheckIntervalId);
+      alarmCheckIntervalId = null;
+    }
+  }
+
+  (function resumeAlarmWatcher() {
+    var alarm = storageGet("lm_alarm", null);
+    if (alarm && alarm.enabled) ensureAlarmWatcher();
+  })();
 
   function renderAlarmStatus() {
     var statusEl = document.getElementById("alarm-status");
@@ -280,11 +301,13 @@
       var timeInput = document.getElementById("alarm-time");
       if (!timeInput.value) return;
       storageSet("lm_alarm", { time: timeInput.value, enabled: true });
+      ensureAlarmWatcher();
       renderAlarmStatus();
     });
 
     document.getElementById("alarm-clear").addEventListener("click", function () {
       storageRemove("lm_alarm");
+      stopAlarmWatcher();
       document.getElementById("alarm-time").value = "";
       renderAlarmStatus();
     });
@@ -344,11 +367,12 @@
     }
 
     function toggleSign() {
-      if (current === "0") return;
+      if (current === "0" || current === "Error") return;
       current = current.charAt(0) === "-" ? current.slice(1) : "-" + current;
     }
 
     function percent() {
+      if (current === "Error") return;
       current = String(parseFloat(current) / 100);
     }
 
@@ -707,12 +731,14 @@
   }
 
   var TOOLS = {
-    alarm: renderAlarm,
-    calculator: renderCalculator,
-    notes: renderNotes,
-    tasks: renderTasks,
-    weather: renderWeather,
-    directions: renderDirections
+    alarm: { type: "panel", render: renderAlarm },
+    calculator: { type: "panel", render: renderCalculator },
+    notes: { type: "panel", render: renderNotes },
+    tasks: { type: "panel", render: renderTasks },
+    weather: { type: "panel", render: renderWeather },
+    directions: { type: "panel", render: renderDirections },
+    podcasts: { type: "link", url: "https://podcasts.apple.com/" },
+    music: { type: "link", url: "https://music.apple.com/" }
   };
 
   /* ---------- service worker ---------- */

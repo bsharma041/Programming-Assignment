@@ -158,14 +158,14 @@ button {
   color: var(--fg);
 }
 
-.tool-content h2 {
+#tool-content h2 {
   margin: 0 32px 16px 0;
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 
-.tool-content p.hint {
+#tool-content p.hint {
   font-size: 13px;
   color: var(--gray);
   margin-top: -8px;

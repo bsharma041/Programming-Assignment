@@ -2,7 +2,6 @@
 
 var CACHE_NAME = "light-mode-v1";
 var APP_SHELL = [
-  "./",
   "./index.html",
   "./manifest.json",
   "./css/style.css",
@@ -15,7 +14,15 @@ var APP_SHELL = [
 self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(APP_SHELL);
+      // cache.add() per file (not cache.addAll) so one failed fetch on a
+      // flaky connection doesn't abort caching of the rest of the shell.
+      return Promise.all(
+        APP_SHELL.map(function (url) {
+          return cache.add(url).catch(function (err) {
+            console.log("Failed to precache " + url, err);
+          });
+        })
+      );
     })
   );
   self.skipWaiting();
@@ -48,8 +55,10 @@ self.addEventListener("fetch", function (event) {
 
   event.respondWith(
     caches.match(request).then(function (cached) {
-      if (cached) return cached;
-      return fetch(request)
+      // Stale-while-revalidate: always refetch in the background and update
+      // the cache, so a cached response is never served forever — the next
+      // load picks up whatever changed, instead of being stuck on old code.
+      var refresh = fetch(request)
         .then(function (response) {
           if (response && response.ok) {
             var responseClone = response.clone();
@@ -60,9 +69,16 @@ self.addEventListener("fetch", function (event) {
           return response;
         })
         .catch(function () {
-          if (request.mode === "navigate") return caches.match("./index.html");
-          return Promise.reject("network unavailable and no cache match");
+          return null;
         });
+
+      if (cached) return cached;
+
+      return refresh.then(function (response) {
+        if (response) return response;
+        if (request.mode === "navigate") return caches.match("./index.html");
+        return Promise.reject("network unavailable and no cache match");
+      });
     })
   );
 });
